@@ -1,0 +1,66 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Production
+dist/
+build/
+.next/
+.turbo/
+out/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Database
+prisma/.env
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+/docker-volumes/
+/pgdata/
+docker-compose.override.yml
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# System files
+.DS_Store
+Thumbs.db
+*.pem
+
+# Misc
+.cache/
+.temp/
+*.bak
+*.swp
+*~
+
+# Workspace specific
+.turbo
+.vercel
+.env*.local

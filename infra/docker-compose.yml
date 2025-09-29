@@ -1,0 +1,14 @@
+services:
+  db_agenda:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: admin1
+      POSTGRES_PASSWORD: secret1
+      POSTGRES_DB: db_agenda
+    ports:
+      - "5433:5432" 
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
