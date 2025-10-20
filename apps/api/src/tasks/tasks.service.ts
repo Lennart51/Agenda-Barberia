@@ -1,24 +1,22 @@
-import { Module } from '@nestjs/common';
-import { ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-
-import { AppModule } from 'src/app.module';
-
-@Module({
-  imports: [],
-  controllers: [],
-  providers: [],
-})
-export class TasksModule {}
-
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
+// Servicio TasksService para gestionar tareas
+// Utiliza PrismaService para interactuar con la base de datos
 @Injectable()
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
+  // Método para crear una nueva tarea
+  async create(createTaskDto: CreateTaskDto) {
+    return this.prisma.task.create({
+      data: createTaskDto,
+    });
+  }
+
+  // Método para obtener todas las tareas con paginación
   async findAll(page = 1, limit = 10) {
     const skip = (page - 1) * limit;
     
@@ -31,30 +29,25 @@ export class TasksService {
       this.prisma.task.count()
     ]);
 
-    return {
-      data: tasks,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit)
-      }
-    };
+    return tasks;
+  }
+
+  async findOne(id: string) {
+    return this.prisma.task.findUnique({
+      where: { id },
+    });
+  }
+
+  async update(id: string, updateTaskDto: UpdateTaskDto) {
+    return this.prisma.task.update({
+      where: { id },
+      data: updateTaskDto,
+    });
+  }
+
+  async remove(id: string) {
+    return this.prisma.task.delete({
+      where: { id },
+    });
   }
 }
-
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableCors();
-  app.useGlobalPipes(new ValidationPipe());
-  
-  const config = new DocumentBuilder()
-    .setTitle('API')
-    .setVersion('1.0')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
-
-  await app.listen(3000);
-}
-bootstrap();

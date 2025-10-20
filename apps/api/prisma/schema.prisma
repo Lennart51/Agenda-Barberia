@@ -1,24 +1,286 @@
+// Configuración del generador Prisma Client
+// Esto genera el cliente para interactuar con la base de datos
+
 generator client {
   provider = "prisma-client-js"
 }
 
+// Configuración de la fuente de datos
+// Define el proveedor de base de datos y la URL de conexión
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Task {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  priority    Priority @default(MEDIUM)
-  dueDate     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+// Modelo Usuario
+// Representa la tabla de usuarios en la base de datos
+model Usuario {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  contrasena        String
+  nombreCompleto    String
+  telefono          String?
+  rol               RolUsuario @default(CLIENTE)
+  activo            Boolean  @default(true)
+  creadoEn          DateTime @default(now())
+  actualizadoEn     DateTime @updatedAt
+
+  cliente           Cliente?
+  barbero           Barbero?
+  notificaciones    Notificacion[]
+
+  @@map("usuarios")
 }
 
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
+enum RolUsuario {
+  ADMIN
+  BARBERO
+  CLIENTE
+}
+
+// CLIENTES
+model Cliente {
+  id                String   @id @default(cuid())
+  usuarioId         String   @unique
+  usuario           Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  
+  fechaNacimiento   DateTime?
+  direccion         String?
+  notas             String?
+  totalVisitas      Int      @default(0)
+  ultimaVisita      DateTime?
+  
+  creadoEn          DateTime @default(now())
+  actualizadoEn     DateTime @updatedAt
+
+  citas             Cita[]
+  resenas           Resena[]
+
+  @@map("clientes")
+}
+
+// BARBEROS
+model Barbero {
+  id                String   @id @default(cuid())
+  nombre             String
+  especialidad       String
+  usuarioId         String   @unique
+  usuario           Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  
+  anosExperiencia   Int?
+  biografia         String?
+  imagenPerfil      String?
+  disponible        Boolean  @default(true)
+  
+  creadoEn          DateTime @default(now())
+  actualizadoEn     DateTime @updatedAt
+
+  citas             Cita[]
+  horarios          HorarioBarbero[]
+  servicios         BarberoServicio[]
+  resenas           Resena[]
+
+  @@map("barberos")
+}
+
+// SERVICIOS
+model Servicio {
+  id                String   @id @default(cuid())
+  nombre            String
+  descripcion       String?
+  categoria         CategoriaServicio
+  precioBase        Decimal
+  duracionMinutos   Int
+  activo            Boolean  @default(true)
+  
+  creadoEn          DateTime @default(now())
+  actualizadoEn     DateTime @updatedAt
+
+  barberos          BarberoServicio[]
+  citasServicios    CitaServicio[]
+
+  @@map("servicios")
+}
+
+enum CategoriaServicio {
+  CORTE
+  BARBA
+  AFEITADO
+  TINTURA
+  TRATAMIENTO
+  COMBO
+}
+
+// RELACIÓN BARBERO-SERVICIO
+model BarberoServicio {
+  id                String   @id @default(cuid())
+  barberoId         String
+  servicioId        String
+  
+  barbero           Barbero  @relation(fields: [barberoId], references: [id], onDelete: Cascade)
+  servicio          Servicio @relation(fields: [servicioId], references: [id], onDelete: Cascade)
+  
+  precioPersonalizado Decimal?
+  creadoEn          DateTime @default(now())
+
+  @@unique([barberoId, servicioId])
+  @@map("barbero_servicios")
+}
+
+// CITAS
+model Cita {
+  id                String   @id @default(cuid())
+  clienteId         String
+  barberoId         String
+  
+  cliente           Cliente  @relation(fields: [clienteId], references: [id])
+  barbero           Barbero  @relation(fields: [barberoId], references: [id])
+  
+  horaInicio        DateTime
+  horaFin           DateTime
+  estado            EstadoCita @default(PENDIENTE)
+  
+  notasCliente      String?
+  notasInternas     String?
+  
+  montoTotal        Decimal  @default(0)
+  estadoPago        EstadoPago @default(PENDIENTE)
+  metodoPago        MetodoPago?
+  
+  canceladaEn       DateTime?
+  canceladaPor      String?
+  razonCancelacion  String?
+  
+  creadoEn          DateTime @default(now())
+  actualizadoEn     DateTime @updatedAt
+
+  servicios         CitaServicio[]
+  resena            Resena?
+
+  @@index([clienteId, horaInicio])
+  @@index([barberoId, horaInicio])
+  @@map("citas")
+}
+
+enum EstadoCita {
+  PENDIENTE
+  CONFIRMADA
+  EN_PROGRESO
+  COMPLETADA
+  CANCELADA
+  NO_ASISTIO
+}
+
+enum EstadoPago {
+  PENDIENTE
+  PAGADO
+  REEMBOLSADO
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TARJETA
+  TRANSFERENCIA
+  MERCADOPAGO
+}
+
+// SERVICIOS DE LA CITA
+model CitaServicio {
+  id                String   @id @default(cuid())
+  citaId            String
+  servicioId        String
+  
+  cita              Cita     @relation(fields: [citaId], references: [id], onDelete: Cascade)
+  servicio          Servicio @relation(fields: [servicioId], references: [id])
+  
+  precio            Decimal
+  duracionMinutos   Int
+  
+  @@map("cita_servicios")
+}
+
+// HORARIOS DE BARBEROS
+model HorarioBarbero {
+  id                String   @id @default(cuid())
+  barberoId         String
+  barbero           Barbero  @relation(fields: [barberoId], references: [id], onDelete: Cascade)
+  
+  diaSemana         DiaSemana
+  horaInicio        String   // "09:00"
+  horaFin           String   // "18:00"
+  activo            Boolean  @default(true)
+  
+  creadoEn          DateTime @default(now())
+  actualizadoEn     DateTime @updatedAt
+
+  @@unique([barberoId, diaSemana])
+  @@map("horarios_barberos")
+}
+
+enum DiaSemana {
+  LUNES
+  MARTES
+  MIERCOLES
+  JUEVES
+  VIERNES
+  SABADO
+  DOMINGO
+}
+
+// RESEÑAS
+model Resena {
+  id                String   @id @default(cuid())
+  citaId            String   @unique
+  clienteId         String
+  barberoId         String
+  
+  cita              Cita     @relation(fields: [citaId], references: [id])
+  cliente           Cliente  @relation(fields: [clienteId], references: [id])
+  barbero           Barbero  @relation(fields: [barberoId], references: [id])
+  
+  calificacion      Int      // 1-5 estrellas
+  comentario        String?
+  
+  creadoEn          DateTime @default(now())
+
+  @@index([barberoId, calificacion])
+  @@map("resenas")
+}
+
+// NOTIFICACIONES
+model Notificacion {
+  id                String   @id @default(cuid())
+  usuarioId         String
+  usuario           Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  
+  tipo              TipoNotificacion
+  titulo            String
+  mensaje           String
+  leida             Boolean  @default(false)
+  
+  creadoEn          DateTime @default(now())
+
+  @@index([usuarioId, leida])
+  @@map("notificaciones")
+}
+
+enum TipoNotificacion {
+  CITA_CONFIRMADA
+  CITA_RECORDATORIO
+  CITA_CANCELADA
+  NUEVA_RESENA
+  SISTEMA
+}
+
+// TAREAS
+model Task {
+  id                String   @id @default(cuid())
+  title             String
+  description       String?
+  completed         Boolean  @default(false)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("tasks")
 }

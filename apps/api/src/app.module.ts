@@ -1,9 +1,12 @@
 import { Module, MiddlewareConsumer } from '@nestjs/common';
-import { TasksModule } from './tasks/tasks.module';
 import { LoggerMiddleware } from './logger.middleware';
+import { PrismaModule } from './prisma.module';
+import { BarberosModule } from './barberos/barberos.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
-  imports: [TasksModule],
+  imports: [PrismaModule, BarberosModule, UsuariosModule, TasksModule],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

@@ -9,6 +9,11 @@ build/
 .turbo/
 out/
 
+# Environment variables
+.env
+.env.*
+!.env.example
+
 # Testing
 coverage/
 .nyc_output/
