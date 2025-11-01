@@ -116,8 +116,29 @@ export default function App() {
     <div className="app-container">
       <div className="header">
         <div className="header-content">
-          <h1>✂️ Gestión de Servicios</h1>
-          <p>Barbería Modern Style</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1000px', margin: '0 auto' }}>
+            <div>
+              <h1>✂️ Gestión de Servicios</h1>
+              <p>Barbería Modern Style</p>
+            </div>
+            <button 
+              onClick={() => {
+                localStorage.removeItem('token');
+                window.location.reload();
+              }}
+              style={{ 
+                background: 'rgba(255,255,255,0.2)', 
+                border: '1px solid white',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.9rem'
+              }}
+            >
+              🚪 Cerrar Sesión
+            </button>
+          </div>
         </div>
       </div>
 

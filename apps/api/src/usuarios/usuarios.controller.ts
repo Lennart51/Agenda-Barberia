@@ -14,7 +14,7 @@ export class UsuariosController {
   @ApiResponse({ status: 201, description: 'Usuario creado exitosamente.' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   create(@Body() createUsuarioDto: CreateUsuarioDto) {
-    return this.usuariosService.create(createUsuarioDto);
+    return this.usuariosService.createFromDto(createUsuarioDto);
   }
 
   @Get()

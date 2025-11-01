@@ -1,16 +1,44 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsuariosService {
   constructor(private prisma: PrismaService) {}
 
-  create(createUsuarioDto: CreateUsuarioDto) {
-    return this.prisma.usuario.create({
-      data: createUsuarioDto
+  async create(email: string, password: string, nombreCompleto: string, telefono?: string, rol?: string) {
+    const exists = await this.prisma.usuario.findUnique({ where: { email } });
+    if (exists) throw new ConflictException('Email ya está en uso');
+    
+    const contrasena = await bcrypt.hash(password, 10);
+    return this.prisma.usuario.create({ 
+      data: { email, contrasena, nombreCompleto, telefono, rol: rol as any || 'CLIENTE' } 
     });
+  }
+
+  // Método para crear desde DTO (sin hash - asume que ya viene hasheado o se requiere manualmente)
+  async createFromDto(createUsuarioDto: CreateUsuarioDto) {
+    const exists = await this.prisma.usuario.findUnique({ where: { email: createUsuarioDto.email } });
+    if (exists) throw new ConflictException('Email ya está en uso');
+    
+    // Si el DTO tiene contraseña en texto plano, la hasheamos
+    if (createUsuarioDto.contrasena) {
+      createUsuarioDto.contrasena = await bcrypt.hash(createUsuarioDto.contrasena, 10);
+    }
+    
+    return this.prisma.usuario.create({ 
+      data: createUsuarioDto as any
+    });
+  }
+
+  findByEmail(email: string) {
+    return this.prisma.usuario.findUnique({ where: { email } });
+  }
+
+  findById(id: string) {
+    return this.prisma.usuario.findUnique({ where: { id } });
   }
 
   findAll() {

@@ -5,9 +5,10 @@ import { BarberosModule } from './barberos/barberos.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AgendasModule } from './agendas/agendas.module';
 import { ServiciosModule } from './servicios/servicios.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, BarberosModule, UsuariosModule, AgendasModule, ServiciosModule],
+  imports: [PrismaModule, BarberosModule, UsuariosModule, AgendasModule, ServiciosModule, AuthModule],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

@@ -14,6 +14,7 @@ async function bootstrap() {
     .setTitle('API Barbería')
     .setDescription('API para gestión de citas y servicios de barbería')
     .setVersion('1.0')
+    .addTag('auth', 'Autenticación y autorización')
     .addTag('usuarios', 'Gestión de usuarios')
     .addTag('barberos', 'Gestión de barberos')
     .addTag('servicios', 'Gestión de servicios')
