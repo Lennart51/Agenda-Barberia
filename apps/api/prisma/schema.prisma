@@ -28,6 +28,7 @@ model Usuario {
   cliente           Cliente?
   barbero           Barbero?
   notificaciones    Notificacion[]
+  servicios         Servicio[]
 
   @@map("usuarios")
 }
@@ -92,6 +93,8 @@ model Servicio {
   precioBase        Decimal
   duracionMinutos   Int
   activo            Boolean  @default(true)
+  userId            String
+  usuario           Usuario  @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   creadoEn          DateTime @default(now())
   actualizadoEn     DateTime @updatedAt
@@ -99,6 +102,7 @@ model Servicio {
   barberos          BarberoServicio[]
   citasServicios    CitaServicio[]
 
+  @@index([userId])
   @@map("servicios")
 }
 
