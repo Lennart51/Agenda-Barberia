@@ -18,12 +18,12 @@ export class UsuariosService {
     });
   }
 
-  // Método para crear desde DTO (sin hash - asume que ya viene hasheado o se requiere manualmente)
+  // Método para crear desde DTO
   async createFromDto(createUsuarioDto: CreateUsuarioDto) {
     const exists = await this.prisma.usuario.findUnique({ where: { email: createUsuarioDto.email } });
     if (exists) throw new ConflictException('Email ya está en uso');
     
-    // Si el DTO tiene contraseña en texto plano, la hasheamos
+    //texto plano a hash
     if (createUsuarioDto.contrasena) {
       createUsuarioDto.contrasena = await bcrypt.hash(createUsuarioDto.contrasena, 10);
     }
