@@ -27,10 +27,28 @@ model Usuario {
 
   cliente           Cliente?
   barbero           Barbero?
+  refreshTokens     RefreshToken[]
   notificaciones    Notificacion[]
   servicios         Servicio[]
 
   @@map("usuarios")
+}
+
+model RefreshToken {
+  id                String   @id @default(cuid())
+  token             String   @unique
+  usuarioId         String
+  usuario           Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  
+  expiresAt         DateTime
+  revocado          Boolean  @default(false)
+  
+  creadoEn          DateTime @default(now())
+  actualizadoEn     DateTime @updatedAt
+
+  @@index([usuarioId])
+  @@index([token, revocado])
+  @@map("refresh_tokens")
 }
 
 enum RolUsuario {

@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SignUpDto {
@@ -20,4 +20,14 @@ export class SignUpDto {
   @IsOptional()
   @IsString()
   telefono?: string;
+
+  @ApiProperty({ 
+    example: 'CLIENTE', 
+    enum: ['ADMIN', 'BARBERO', 'CLIENTE'],
+    required: false,
+    description: 'Rol del usuario (por defecto CLIENTE)'
+  })
+  @IsOptional()
+  @IsEnum(['ADMIN', 'BARBERO', 'CLIENTE'])
+  rol?: string;
 }
