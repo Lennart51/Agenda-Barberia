@@ -137,8 +137,11 @@ export class AuthService {
   }
 
   private async generateTokens(sub: string, email: string, rol: string) {
+    // Agregar jti (JWT ID) único para evitar colisiones de tokens
+    const jti = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    
     const access_token = this.jwt.sign(
-      { sub, email, rol },
+      { sub, email, rol, jti: `access-${jti}` },
       { 
         secret: this.config.get('JWT_SECRET') || 'supersecret_dev_change_me_barberia_2025',
         expiresIn: Number(this.config.get('JWT_EXPIRES')) || 86400 
@@ -147,7 +150,7 @@ export class AuthService {
 
     const refreshExpiresIn = Number(this.config.get('JWT_REFRESH_EXPIRES')) || 604800;
     const refresh_token = this.jwt.sign(
-      { sub, email, rol },
+      { sub, email, rol, jti: `refresh-${jti}` },
       { 
         secret: this.config.get('JWT_REFRESH_SECRET') || 'supersecret_refresh_dev_change_me_barberia_2025',
         expiresIn: refreshExpiresIn 

@@ -13,9 +13,22 @@ export class UsuariosService {
     if (exists) throw new ConflictException('Email ya está en uso');
     
     const contrasena = await bcrypt.hash(password, 10);
-    return this.prisma.usuario.create({ 
-      data: { email, contrasena, nombreCompleto, telefono, rol: rol as any || 'CLIENTE' } 
+    const userRole = rol as any || 'CLIENTE';
+    
+    const usuario = await this.prisma.usuario.create({ 
+      data: { email, contrasena, nombreCompleto, telefono, rol: userRole } 
     });
+
+    // Crear perfil específico según el rol
+    if (userRole === 'CLIENTE') {
+      await this.prisma.cliente.create({
+        data: {
+          usuarioId: usuario.id,
+        }
+      });
+    }
+
+    return usuario;
   }
 
   // Método para crear desde DTO
@@ -39,6 +52,15 @@ export class UsuariosService {
 
   findById(id: string) {
     return this.prisma.usuario.findUnique({ where: { id } });
+  }
+
+  findClienteByUserId(userId: string) {
+    return this.prisma.cliente.findFirst({
+      where: { usuarioId: userId },
+      include: {
+        usuario: true
+      }
+    });
   }
 
   findAll() {

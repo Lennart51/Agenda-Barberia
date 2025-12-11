@@ -1,18 +1,36 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsInt, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsInt, IsOptional, IsBoolean, IsEmail } from 'class-validator';
 
 export class CreateBarberoDto {
   @ApiProperty({ description: 'Nombre del barbero' })
   @IsString()
   nombre: string;
 
-  @ApiProperty({ description: 'Especialidad del barbero' })
+  @ApiProperty({ description: 'ID del usuario asociado al barbero (opcional si se proporciona email)' })
+  @IsOptional()
   @IsString()
-  especialidad: string;
+  usuarioId?: string;
 
-  @ApiProperty({ description: 'ID del usuario asociado al barbero' })
+  // Campos para crear usuario automáticamente
+  @ApiProperty({ description: 'Email del barbero (para crear usuario automáticamente)', required: false })
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @ApiProperty({ description: 'Contraseña del barbero (para crear usuario automáticamente)', required: false })
+  @IsOptional()
   @IsString()
-  usuarioId: string;
+  password?: string;
+
+  @ApiProperty({ description: 'Nombre completo del barbero (para crear usuario automáticamente)', required: false })
+  @IsOptional()
+  @IsString()
+  nombreCompleto?: string;
+
+  @ApiProperty({ description: 'Teléfono del barbero (para crear usuario automáticamente)', required: false })
+  @IsOptional()
+  @IsString()
+  telefono?: string;
 
   @ApiProperty({ description: 'Años de experiencia', required: false })
   @IsOptional()

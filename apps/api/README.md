@@ -23,38 +23,206 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+API REST para sistema de gestión de barbería construida con [NestJS](https://github.com/nestjs/nest) y TypeScript.
 
-## Project setup
+### Características principales
+
+- 🔐 Autenticación JWT con refresh tokens persistidos en BD
+- 🔒 Autorización basada en roles (ADMIN, BARBERO, CLIENTE)
+- 📚 Documentación automática con Swagger/OpenAPI
+- 🗄️ Base de datos PostgreSQL con Prisma ORM
+- ✅ Testing completo (unitario y E2E)
+- 🛡️ Validación de datos con class-validator
+
+## Variables de entorno
+
+Crea un archivo `.env` basado en `.env.example`:
+
+```bash
+# Base de datos
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/barberia_db?schema=public"
+
+# JWT Secrets
+JWT_SECRET="supersecret_dev_change_me_barberia_2025"
+JWT_EXPIRES=86400                    # 24 horas en segundos
+JWT_REFRESH_SECRET="supersecret_refresh_dev_change_me_barberia_2025"
+JWT_REFRESH_EXPIRES=604800           # 7 días en segundos
+
+# Aplicación
+PORT=3000
+```
+
+## Instalación y configuración
+
+### 1. Instalar dependencias
 
 ```bash
 $ pnpm install
 ```
 
-## Compile and run the project
+### 2. Configurar base de datos
+
+Asegúrate de tener PostgreSQL corriendo (puedes usar Docker):
 
 ```bash
-# development
-$ pnpm run start
+# Desde la raíz del proyecto
+$ cd ../../infra
+$ docker-compose up -d
+```
 
-# watch mode
+### 3. Ejecutar migraciones de Prisma
+
+```bash
+$ npx prisma migrate deploy
+$ npx prisma generate
+```
+
+### 4. (Opcional) Abrir Prisma Studio
+
+```bash
+$ npx prisma studio
+```
+
+## Ejecutar la aplicación
+
+```bash
+# Modo desarrollo
 $ pnpm run start:dev
 
-# production mode
+# Modo producción
+$ pnpm run build
 $ pnpm run start:prod
 ```
 
-## Run tests
+La API estará disponible en `http://localhost:3000`
+
+Documentación Swagger: `http://localhost:3000/api`
+
+## Testing
+
+### Tests Unitarios
+
+Los tests unitarios verifican la lógica de negocio de forma aislada usando mocks:
 
 ```bash
-# unit tests
+# Ejecutar todos los tests unitarios
 $ pnpm run test
 
-# e2e tests
+# Ejecutar tests en modo watch (desarrollo)
+$ pnpm run test:watch
+
+# Ejecutar tests con cobertura
+$ pnpm run test:cov
+
+# Ejecutar un archivo específico
+$ pnpm run test auth.service.spec.ts
+```
+
+**Tests unitarios disponibles:**
+- `auth.service.spec.ts` - Servicio de autenticación (signup, login, refresh, logout)
+- `agendas.service.spec.ts` - Servicio de agendas (CRUD completo)
+- `jwt.guard.spec.ts` - Guard de autenticación JWT
+- `roles.guard.spec.ts` - Guard de autorización por roles
+
+### Tests E2E (End-to-End)
+
+Los tests E2E prueban la aplicación completa simulando peticiones HTTP reales:
+
+```bash
+# Ejecutar todos los tests E2E
 $ pnpm run test:e2e
 
-# test coverage
+# Ejecutar un archivo E2E específico
+$ pnpm run test:e2e -- auth.e2e-spec.ts
+```
+
+**Tests E2E disponibles:**
+- `auth.e2e-spec.ts` - Endpoints de autenticación
+  - POST /auth/signup
+  - POST /auth/login
+  - GET /auth/me
+  - POST /auth/refresh
+  - POST /auth/logout
+  
+- `agendas.e2e-spec.ts` - Endpoints de agendas
+  - POST /agendas
+  - GET /agendas
+  - GET /agendas/:id
+  - GET /agendas/completed
+  - GET /agendas/pending
+  - PATCH /agendas/:id
+  - PATCH /agendas/:id/toggle-complete
+  - DELETE /agendas/:id
+  - GET /agendas/admin/all (requiere rol ADMIN)
+
+### Cobertura de tests
+
+```bash
+# Generar reporte de cobertura
 $ pnpm run test:cov
+```
+
+El reporte se generará en `coverage/lcov-report/index.html`
+
+### Debugging de tests
+
+```bash
+# Debug de tests unitarios
+$ pnpm run test:debug
+
+# Luego conecta tu debugger a localhost:9229
+```
+
+### Buenas prácticas de testing implementadas
+
+✅ **Aislamiento**: Cada test es independiente y no afecta a otros  
+✅ **Mocks**: Se usan mocks para dependencias externas (BD, servicios)  
+✅ **Arrange-Act-Assert**: Estructura clara en cada test  
+✅ **Casos edge**: Tests para casos de error y validaciones  
+✅ **Limpieza**: Los tests E2E limpian datos de prueba después de ejecutarse  
+✅ **Nombrado descriptivo**: Los tests describen claramente qué prueban
+
+### Documentación adicional de testing
+
+📚 Para guías detalladas y ejemplos, consulta:
+- [TESTING.md](./TESTING.md) - Guía completa de testing
+- [TESTING_EXAMPLES.md](./TESTING_EXAMPLES.md) - Ejemplos prácticos paso a paso
+
+## Estructura del proyecto
+
+```
+apps/api/
+├── prisma/
+│   ├── schema.prisma              # Esquema de base de datos
+│   └── migrations/                # Migraciones de Prisma
+├── src/
+│   ├── main.ts                    # Entry point
+│   ├── app.module.ts              # Módulo principal
+│   ├── prisma.service.ts          # Servicio de Prisma
+│   ├── auth/                      # Módulo de autenticación
+│   │   ├── auth.controller.ts
+│   │   ├── auth.service.ts
+│   │   ├── auth.service.spec.ts   # Tests unitarios
+│   │   ├── jwt.guard.ts
+│   │   ├── jwt.strategy.ts
+│   │   ├── roles.guard.ts
+│   │   └── dto/                   # Data Transfer Objects
+│   ├── agendas/                   # Módulo de agendas
+│   │   ├── agendas.controller.ts
+│   │   ├── agendas.service.ts
+│   │   ├── agendas.service.spec.ts
+│   │   └── dto/
+│   ├── barberos/                  # Módulo de barberos
+│   ├── servicios/                 # Módulo de servicios
+│   └── usuarios/                  # Módulo de usuarios
+├── test/
+│   ├── jest-e2e.json              # Config de Jest E2E
+│   ├── auth.e2e-spec.ts           # Tests E2E de Auth
+│   └── agendas.e2e-spec.ts        # Tests E2E de Agendas
+├── .env                           # Variables de entorno
+├── README.md                      # Este archivo
+├── TESTING.md                     # Guía de testing
+└── TESTING_EXAMPLES.md            # Ejemplos de testing
 ```
 
 ## Deployment
